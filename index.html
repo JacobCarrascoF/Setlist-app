@@ -125,13 +125,16 @@
   }
   .song.dragging{ opacity:.5; box-shadow:0 4px 12px rgba(0,0,0,0.15); position:relative; z-index:10; }
   .song.pause-row{
-    background:repeating-linear-gradient(45deg, #fff, #fff 8px, #f2ede1 8px, #f2ede1 16px);
-    border:1px dashed #c7bfa9;
+    background:#fff;
+    padding-top:6px;
+    padding-bottom:6px;
   }
   .pause-label{
-    color:#a89f8c !important;
-    font-style:italic;
-    letter-spacing:.08em;
+    flex:1;
+    height:0;
+    border-top:4px solid #1c1a17;
+    align-self:center;
+    margin:0 8px;
   }
   .song.drag-over{ border-top:2px solid var(--accent); }
   .handle{
@@ -731,7 +734,7 @@ function render(){
 
     var nameEl = document.createElement('span');
     nameEl.className = song.isPause ? 'song-name pause-label' : 'song-name';
-    nameEl.textContent = song.isPause ? '· · · PAUSA · · ·' : song.name;
+    nameEl.textContent = song.isPause ? '' : song.name;
 
     var bpmEl = document.createElement('span');
     bpmEl.className = 'bpm';
@@ -1246,9 +1249,9 @@ async function generateSetlistPdf(title){
   var fontBold = await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
   var ink = PDFLib.rgb(0, 0, 0);
 
-  var marginX = 36;
-  var marginTop = 30;
-  var marginBottom = 30;
+  var marginX = 30;
+  var marginTop = 24;
+  var marginBottom = 24;
   var usableWidth = pageWidth - marginX * 2;
 
   // Cabecera: título pequeño en la esquina derecha + filete fino
@@ -1276,14 +1279,14 @@ async function generateSetlistPdf(title){
   }
 
   // Alturas relativas: canción = 1.18 x cuerpo; pausa = 0.55 x cuerpo (línea gruesa)
-  var LINE_FACTOR = 1.18;
-  var PAUSE_FACTOR = 0.55;
+  var LINE_FACTOR = 1.06;
+  var PAUSE_FACTOR = 0.42;
   var units = 0;
   for(var k=0;k<items.length;k++){ units += items[k].pause ? PAUSE_FACTOR : LINE_FACTOR; }
 
   // Cuerpo máximo que cabe en alto (tope 30 pt) ...
-  var size = units > 0 ? availableHeight / units : 44;
-  if(size > 44) size = 44;
+  var size = units > 0 ? availableHeight / units : 60;
+  if(size > 60) size = 60;
   // ... y que ningún título se salga en ancho (se reduce el cuerpo global lo mínimo necesario)
   var numberWidthFactor = 0; // sin numeración: todo el ancho es para el título
   for(var m=0;m<items.length;m++){
@@ -1304,11 +1307,11 @@ async function generateSetlistPdf(title){
     var it = items[idx];
     if(it.pause){
       var lineY = y - pauseH / 2;
-      page.drawLine({ start: {x: marginX, y: lineY}, end: {x: pageWidth - marginX, y: lineY}, thickness: Math.max(3, size * 0.16), color: ink });
+      page.drawLine({ start: {x: marginX, y: lineY}, end: {x: pageWidth - marginX, y: lineY}, thickness: Math.max(2, size * 0.07), color: ink });
       y -= pauseH;
     } else {
       // baseline: descenso aprox. 0.22 del cuerpo dentro de la línea
-      page.drawText(it.text, { x: marginX, y: y - lineH + size * 0.30, size: size, font: fontBold, color: ink });
+      page.drawText(it.text, { x: marginX, y: y - lineH + size * 0.24, size: size, font: fontBold, color: ink });
       y -= lineH;
     }
   }
