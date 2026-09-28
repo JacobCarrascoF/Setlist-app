@@ -2,7 +2,7 @@
 // tras la primera visita. El PDF de letras va embebido dentro de index.html, así
 // que cachear index.html ya incluye todo lo necesario.
 
-var CACHE_NAME = 'setlist-app-v1';
+var CACHE_NAME = 'setlist-app-v6'; // <-- incrementar en cada actualización para forzar refresco
 var FILES_TO_CACHE = [
   './',
   './index.html',
@@ -22,8 +22,6 @@ self.addEventListener('install', function(event){
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache){
       return cache.addAll(FILES_TO_CACHE).then(function(){
-        // Las librerías externas se cachean "best effort": si no hay conexión
-        // en el primer install, la app sigue funcionando sin bloquear la instalación.
         return Promise.all(
           EXTERNAL_LIBS.map(function(url){
             return cache.add(url).catch(function(){ /* ignorar fallo, se reintentará al usarla */ });
@@ -51,8 +49,6 @@ self.addEventListener('fetch', function(event){
     caches.match(event.request).then(function(cached){
       if(cached) return cached;
       return fetch(event.request).then(function(response){
-        // Cachear dinámicamente cualquier recurso nuevo que se cargue con éxito
-        // (por ejemplo, si se actualiza la librería externa)
         if(response && response.status === 200){
           var responseClone = response.clone();
           caches.open(CACHE_NAME).then(function(cache){
@@ -61,7 +57,6 @@ self.addEventListener('fetch', function(event){
         }
         return response;
       }).catch(function(){
-        // Sin conexión y sin caché: para navegación, devolver el index cacheado
         if(event.request.mode === 'navigate'){
           return caches.match('./index.html');
         }
